@@ -1,0 +1,8 @@
+{
+  "/candidatos/page": "app/candidatos/page.js",
+  "/empleos/page": "app/empleos/page.js",
+  "/empresas/page": "app/empresas/page.js",
+  "/contacto/page": "app/contacto/page.js",
+  "/registrar-empresa/page": "app/registrar-empresa/page.js",
+  "/iniciar-sesion/page": "app/iniciar-sesion/page.js"
+}

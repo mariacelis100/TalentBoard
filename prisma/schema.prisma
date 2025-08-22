@@ -1,0 +1,142 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de Usuarios
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  fullName  String   @map("full_name")
+  role      UserRole @default(CANDIDATE)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  candidate  Candidate?
+  company    Company?
+
+  @@map("users")
+}
+
+// Modelo de Candidatos
+model Candidate {
+  id          String   @id @default(cuid())
+  userId      String   @unique @map("user_id")
+  title       String?
+  experience  String?
+  location    String?
+  salary      String?
+  availability String?
+  skills      String[] // Array de habilidades
+  rating      Float    @default(0)
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications Application[]
+
+  @@map("candidates")
+}
+
+// Modelo de Empresas
+model Company {
+  id          String   @id @default(cuid())
+  userId      String   @unique @map("user_id")
+  name        String
+  industry    String?
+  size        String?
+  location    String?
+  description String?
+  website     String?
+  founded     String?
+  benefits    String[] // Array de beneficios
+  rating      Float    @default(0)
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs    Job[]
+
+  @@map("companies")
+}
+
+// Modelo de Empleos
+model Job {
+  id          String   @id @default(cuid())
+  companyId   String   @map("company_id")
+  title       String
+  description String
+  requirements String[]
+  location    String
+  salary      String?
+  type        JobType  @default(FULL_TIME)
+  category    String
+  status      JobStatus @default(ACTIVE)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications Application[]
+
+  @@map("jobs")
+}
+
+// Modelo de Aplicaciones
+model Application {
+  id        String   @id @default(cuid())
+  jobId     String   @map("job_id")
+  candidateId String  @map("candidate_id")
+  status    ApplicationStatus @default(PENDING)
+  coverLetter String? @map("cover_letter")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  job       Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidate Candidate  @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@map("applications")
+}
+
+// Enums
+enum UserRole {
+  CANDIDATE
+  COMPANY
+  ADMIN
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  REMOTE
+}
+
+enum JobStatus {
+  ACTIVE
+  INACTIVE
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+}
